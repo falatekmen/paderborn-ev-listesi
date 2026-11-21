@@ -1,0 +1,212 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<style>:root{color-scheme:light;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0;font:14px/1.4 system-ui,-apple-system,"Segoe UI",sans-serif}img{max-width:100%}[hidden]{display:none!important}</style>
+<title>Paderborn Havalimanı Ev Listesi</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;600&display=swap">
+<style>
+/* Layout: tek sütun, havalimanından uzaklığa göre sıralı ilan kartları; her kartta km pisti */
+:root{
+  --bg:#f5f6f8; --surface:#ffffff; --fg:#14202e; --muted:#5b6878; --line:#dde2e8;
+  --accent:#d9631e; --accent-soft:#fbe9dd; --ink:#1d3a5c; --ok:#1f7a4d; --warn:#a15c00; --warn-soft:#fdf1dc;
+  --f-body:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --f-mono:"IBM Plex Mono",ui-monospace,Menlo,monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#0f1620; --surface:#18222e; --fg:#e6ebf1; --muted:#9aa7b6; --line:#2a3644;
+  --accent:#f08a4b; --accent-soft:#3a2618; --ink:#9cc2ec; --ok:#5fc795; --warn:#e7ac55; --warn-soft:#33270f; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0f1620; --surface:#18222e; --fg:#e6ebf1; --muted:#9aa7b6; --line:#2a3644;
+  --accent:#f08a4b; --accent-soft:#3a2618; --ink:#9cc2ec; --ok:#5fc795; --warn:#e7ac55; --warn-soft:#33270f; color-scheme:dark}
+body{background:var(--bg);color:var(--fg);font-family:var(--f-body);font-size:15px;line-height:1.5}
+.wrap{max-width:980px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:28px 56px;display:grid;gap:22px}
+h1{font-size:1.75rem;line-height:1.2;margin:0;text-wrap:balance;color:var(--ink)}
+.lead{color:var(--muted);margin:6px 0 0;max-width:68ch}
+.eyebrow{font-family:var(--f-mono);font-size:.75rem;letter-spacing:.08em;text-transform:uppercase;color:var(--accent)}
+.facts{display:flex;flex-wrap:wrap;gap:8px 18px;font-size:.88rem;color:var(--muted)}
+.facts b{color:var(--fg);font-variant-numeric:tabular-nums}
+.note{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:14px 16px;font-size:.9rem;display:grid;gap:6px}
+.note h2{font-size:.95rem;margin:0}
+.note ul{margin:0;padding-left:1.1em;display:grid;gap:4px}
+.filters{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.filters span{font-size:.85rem;color:var(--muted);margin-right:4px}
+.chip{font:inherit;font-size:.85rem;border:1px solid var(--line);background:var(--surface);color:var(--fg);padding:6px 12px;border-radius:999px;cursor:pointer}
+.chip[aria-pressed="true"]{background:var(--ink);border-color:var(--ink);color:var(--bg)}
+.chip:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.count{font-family:var(--f-mono);font-size:.8rem;color:var(--muted)}
+.list{display:grid;gap:10px;list-style:none;margin:0;padding:0}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:14px 16px;display:grid;grid-template-columns:76px minmax(0,1fr);gap:4px 16px}
+.km{grid-row:span 3;display:flex;flex-direction:column;align-items:flex-start;gap:6px}
+.km strong{font-family:var(--f-mono);font-size:1.35rem;font-weight:600;color:var(--accent);font-variant-numeric:tabular-nums;line-height:1}
+.km small{font-family:var(--f-mono);font-size:.7rem;color:var(--muted)}
+.runway{width:64px;height:6px;border-radius:3px;background:var(--line);position:relative;overflow:hidden}
+.runway i{position:absolute;inset:0 auto 0 0;background:var(--accent);border-radius:3px}
+.top{display:flex;flex-wrap:wrap;gap:6px 10px;align-items:baseline;min-width:0}
+.top h3{font-size:1rem;margin:0;min-width:0}
+.place{color:var(--muted);font-size:.88rem}
+.tags{display:flex;flex-wrap:wrap;gap:6px}
+.tag{font-size:.75rem;padding:2px 8px;border-radius:999px;background:var(--accent-soft);color:var(--fg)}
+.tag.room{background:var(--ink);color:var(--bg)}
+.tag.warn{background:var(--warn-soft);color:var(--warn)}
+.grid{display:flex;flex-wrap:wrap;gap:4px 18px;font-size:.88rem;min-width:0}
+.grid div{display:flex;gap:6px}
+.grid dt{color:var(--muted)}
+.grid dd{margin:0;font-weight:500;font-variant-numeric:tabular-nums}
+.grid .total dd{font-weight:700;color:var(--accent)}
+.foot{display:flex;flex-wrap:wrap;gap:6px 14px;align-items:baseline;font-size:.85rem;color:var(--muted);min-width:0}
+.foot a{color:var(--ink);font-weight:600;text-decoration:none;border-bottom:1px solid currentColor}
+.foot a:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.excl{font-size:.88rem}
+@media (max-width:520px){.card{grid-template-columns:1fr}.km{grid-row:auto;flex-direction:row;align-items:center}}
+</style>
+
+<div class="wrap">
+  <header>
+    <div class="eyebrow">Paderborn/Lippstadt Havalimanı (PAD) · Büren-Ahden</div>
+    <h1>Havalimanına yakından uzağa 60 kiralık ev ve oda</h1>
+    <p class="lead">Stüdyo ve 1+1 daireler ve oda kiralama ilanları. Her ilanın detay sayfası açılıp kontrol edildi; liste havalimanına kuş uçuşu mesafeye göre sıralı.</p>
+  </header>
+
+  <div class="facts">
+    <div>Tarama tarihi <b>21.11.2026</b></div>
+    <div>Kaynak <b>Kleinanzeigen · ImmoScout24 · Immowelt · WG-Gesucht (bölgedeki tüm sayfalar)</b></div>
+    <div>Mesafe merkezi <b>Flughafenstraße 33, 33142 Büren</b></div>
+  </div>
+
+  <section class="note">
+    <h2>Okurken bilmen gerekenler</h2>
+    <ul>
+      <li><b>Aylık toplam</b>: aidat, su, çöp ve ısınma dahil, her ay ödeyeceğin tutar (Almanca ilanlarda "Warmmiete"). İlanda toplam yazmıyorsa çıplak kira ile yan giderleri toplayıp "≈" ile gösterdim.</li>
+      <li><b>Çıplak kira</b>: yan giderler hariç, sadece kira ("Kaltmiete"). <b>Depozito</b>: taşınırken bir kez ödenen, evden çıkarken hasar yoksa geri verilen güvence bedeli ("Kaution"), genelde 2–3 aylık çıplak kira.</li>
+      <li><b>Daire tipi</b>: Almanya'da salon da oda sayılır. İlandaki "2 Zimmer" Türkiye'deki 1+1'e, "1 Zimmer" stüdyoya denk gelir; ben Türkçe karşılığını yazdım.</li>
+      <li>Mesafe <b>kuş uçuşu</b>. Sokak adresi varsa adres, yoksa mahalle/şehir merkezi üzerinden hesaplandı (önünde "~" var).</li>
+      <li>Havalimanının en yakını Salzkotten (güneyi, Upsprunge), Büren, Geseke ve Paderborn-Wewer. Paderborn şehir merkezi yaklaşık 14 km uzakta.</li>
+      <li>Başvururken genelde istenenler: SCHUFA, son 3 maaş bordrosu veya iş sözleşmesi, kimlik, Mietschuldenfreiheitsbescheinigung (eski ev sahibinden borcu yoktur yazısı). Kaution genelde 2–3 aylık soğuk kiradır.</li>
+      <li>Kleinanzeigen'de görmeden para (depozito, "anahtar kargosu") isteyen ilanlar dolandırıcılıktır. Önce evi gör, sözleşmeyi imzala, sonra öde.</li>
+    </ul>
+  </section>
+
+  <div class="filters" role="group" aria-label="Filtre">
+    <span>Göster:</span>
+    <button class="chip" id="f-all" data-f="all" aria-pressed="true">Hepsi</button>
+    <button class="chip" id="f-flat" data-f="flat" aria-pressed="false">Daireler</button>
+    <button class="chip" id="f-room" data-f="room" aria-pressed="false">Oda / WG</button>
+    <button class="chip" id="f-furn" data-f="furn" aria-pressed="false">Eşyalı</button>
+    <button class="chip" id="f-10" data-f="10" aria-pressed="false">10 km içi</button>
+    <span class="count" id="count"></span>
+  </div>
+
+  <ol class="list" id="list"></ol>
+
+  <section class="note excl">
+    <h2>Bilerek listeye almadıklarım</h2>
+    <ul>
+      <li>Geseke, Delbrücker Str. 2a (307 € çıplak kira): <b>WBS</b> (sosyal konut belgesi) gerekiyor.</li>
+      <li>Rüthen "Generationenpark" daireleri: yaşlılara yönelik servisli konut.</li>
+      <li>ImmoScout24'te fiyatı aralık olarak verilen ("332–368 €" gibi) yaklaşık 100 kayıt: gerçek ilan değil, ücretli "Suchen+" bekleme listesi tahminleri.</li>
+      <li>WG-Gesucht'ta Paderborn'daki yaklaşık 100 odanın çoğu: sadece kadınlara açık olanlar, sadece öğrencilere verilenler, birkaç haftalık ara kiralamalar ve aynı semtte daha pahalı tekrarlar. Cinsiyet şartı olmayan ve havalimanına daha yakın olanları aldım.</li>
+      <li>Sadece kadın, sadece öğrenci (öğrenci yurdu tipi) odalar, günlük kiralanan tatil daireleri ve kiracıdan aracılık ücreti alan FLATmix ilanları.</li>
+      <li>Brilon, Marsberg, Rüthen, Erwitte, Lippstadt: Paderborn bölgesinin dışında kalıyor ve hepsi aşağıdaki seçeneklerden daha uzak.</li>
+    </ul>
+  </section>
+</div>
+
+<script>
+const KA = "https://www.kleinanzeigen.de/s-anzeige/";
+const IS = "https://www.immobilienscout24.de/expose/";
+const WG = "https://www.wg-gesucht.de/";
+const L = [
+ {km:4.2,t:"Yeni bina 2 odalı daire, balkonlu (ilk kiracı)",p:"Salzkotten-Upsprunge, Frieth 7",z:"2 Zi · 59,6 m²",k:"775 €",w:"≈ 965 €",a:"Mart 2027",d:"1.550 €",n:"Asansör, KfW-40 bina, kapalı otopark +75 €/ay. Evcil hayvan görüşülür.",tags:["Daire"],u:KA+"erstbezug-2-zimmer-neubauwohnung-mit-balkon/3469299077-203-1362",s:"Kleinanzeigen · özel"},
+ {km:5.8,t:"Büyük terasla 2 odalı daire",p:"Salzkotten, Westring 46",z:"2 Zi · 81 m²",k:"700 €",w:"950 €",a:"Kasım 2026",d:"2.000 €",n:"Geniş salon, ayrı yatak odası, büyük teras.",tags:["Daire"],u:KA+"grsse-2-zimmer-wohnung-in-salzkotten/3560087481-203-1362",s:"Kleinanzeigen · özel"},
+ {km:6.4,ap:1,t:"Sakin müstakil evde çatı katı daire",p:"Salzkotten (sokak verilmemiş)",z:"2,5 Zi · 80 m²",k:"750 €",w:"≈ 950 €",a:"Ekim 2026'dan beri boş",d:"1.400 €",n:"Ev sahibi tek kişi veya işe gidip gelen (Pendler) kiracı istiyor. Sigara ve evcil hayvan yok. Immowelt'te çıplak kira 780 € yazıyor.",tags:["Daire"],u:KA+"das-helle-appartement-verbindet-ruhe-komfort-und-grosszuegigkeit/3451639229-203-1362",s:"Kleinanzeigen · özel"},
+ {km:6.4,ap:1,t:"Modern 2 odalı daire, büyük balkon",p:"Salzkotten",z:"2 Zi · 86 m²",k:"990 €",w:"1.180 €",a:"Ocak 2027",d:"2.970 €",n:"Üst düzey donanım. Aynı daire ImmoScout24'te de var (161349076).",tags:["Daire"],u:KA+"moderne-2-zkb-whg-ueber-den-daechern-von-salzkotten/3576131160-203-1362",s:"Kleinanzeigen · özel"},
+ {km:6.4,ap:1,t:"Paylaşımlı evde (WG) oda",p:"Salzkotten",z:"Oda · 85 m² WG",k:"480 €",w:"480–500 €",a:"Mart 2027",d:"ilanda yok",n:"Ortak yaşamı seven bir ev arkadaşı aranıyor.",tags:["Oda"],room:1,u:KA+"wg-zimmer-in-cooler-wg-zu-vermieten/3567982782-199-1362",s:"Kleinanzeigen · özel"},
+ {km:7.7,t:"Komple yenilenmiş 2,5 odalı daire, çok büyük balkon",p:"Büren, Detmarstraße 27",z:"2,5 Zi · 84,2 m²",k:"600 €",w:"820 €",a:"ilanda yok, sorulmalı",d:"ilanda yok",n:"2. kat. Halı dışında her şey yenilenmiş. ImmoScout24'te de var (166520546).",tags:["Daire"],u:KA+"kernsanierte-2-5-zimmer-wohnungen-mitten-in-bueren-/3361723016-203-1272",s:"Kleinanzeigen + ImmoScout24"},
+ {km:7.7,ap:1,t:"Modernize edilmiş 2 odalı daire",p:"Geseke",z:"2 Zi · 69,74 m²",k:"678 €",w:"≈ 878 €",a:"Mart 2027",d:"2.000 €",n:"Yeni gibi. ImmoScout24'te de var (172538196).",tags:["Daire"],u:KA+"2-zimmer-wohnung-in-geseke/3567897775-203-1260",s:"Kleinanzeigen · özel"},
+ {km:7.7,ap:1,t:"Ferah 2,5 odalı daire",p:"Geseke",z:"2,5 Zi · 100 m²",k:"800 €",w:"1.000 €",a:"Aralık 2026",d:"1.600 €",n:"Bir kediye izin var. Tek kişi için büyük.",tags:["Daire"],u:KA+"wohnung-mit-wohlfuehlambiente-zur-vermietung/3569296683-203-1260",s:"Kleinanzeigen · özel"},
+ {km:7.8,ap:1,t:"Eşyalı tek kişilik daire, ayrı yatak alanı",p:"Büren merkez, eski villa",z:"1 Zi · 43 m²",k:"—",w:"540 €",a:"1 Ocak 2027 (görüşülürse daha erken)",d:"1.320 €",n:"Tamamen eşyalı, bulaşık makineli mutfak, çamaşır makinesi. İlanda yazan: havalimanına yaklaşık 8 dakika.",tags:["Daire","Eşyalı"],furn:1,u:KA+"moebliertes-single-appartement-43-qm-in-kernstadt-bueren/3566902596-203-1272",s:"Kleinanzeigen · özel"},
+ {km:7.8,ap:1,t:"Eşyalı tek kişilik daire, eski villada",p:"Büren merkez",z:"1 Zi · 45 m²",k:"—",w:"560 €",a:"Kasım 2026 (hemen)",d:"1.380 €",n:"Aynı ev sahibinin ikinci dairesi. İlanda havalimanına 8 dakika yazıyor.",tags:["Daire","Eşyalı"],furn:1,u:KA+"charmantes-single-appartement-45-qm-in-altbauvilla-in-bueren/3566896888-203-1272",s:"Kleinanzeigen · özel"},
+ {km:7.8,ap:1,t:"Şehir merkezinde tek kişilik stüdyo",p:"Büren merkez",z:"1 Zi · 38 m²",k:"300 €",w:"450 €",a:"01.03.2027 (Immowelt)",d:"600 €",n:"Emlakçı: Lilian Büker Immobilien. Sadece tek kişi, evcil hayvan yok. Önce ilanın tamamını okumanı istiyor.",tags:["Daire"],u:KA+"single-einzimmerwohnung-apartment-in-der-innenstadt/3577371441-203-1272",s:"Kleinanzeigen · emlakçı"},
+ {km:7.8,ap:1,t:"Merkezde 83 m², hemen boş",p:"Büren merkez",z:"2 Zi · 83 m²",k:"—",w:"860 € (yan gider dahil)",a:"Hemen",d:"1.300 €",n:"Mutfak dahil, parke, balkon, 2026'da yeni ısı pompası. Evcil hayvan yok.",tags:["Daire"],u:KA+"wohnen-auf-83m2-im-herzen-der-stadt-bueren-zu-sofort-frei/3571822900-203-1272",s:"Kleinanzeigen · özel"},
+ {km:8.1,t:"Yeni binada asansörlü, mutfaklı daire",p:"Büren, Bruchberg 22",z:"2 Zi · 68,75 m²",k:"825 €",w:"975 €",a:"Kasım 2026",d:"1.650 €",n:"Sadece 5 daireli küçük yeni bina. Immowelt'te de var.",tags:["Daire"],u:KA+"moderne-wohnung-mit-aufzug-und-kueche/3576951198-203-1272",s:"Kleinanzeigen + Immowelt"},
+ {km:8.5,t:"Çatı katı daire",p:"Borchen-Kirchborchen, Gartenstraße 27",z:"2 Zi · 61 m²",k:"550 €",w:"720 €",a:"Şubat 2027 (gerekirse daha erken)",d:"1.500 €",n:"Evcil hayvan görüşülür.",tags:["Daire"],u:KA+"dachgeschosswohnung-in-kirchborchen/3577078624-203-2159",s:"Kleinanzeigen · özel"},
+ {km:9.0,ap:1,t:"Tamamen eşyalı WG odası",p:"Borchen",z:"Oda",k:"—",w:"400 €",a:"Ekim 2026'dan beri",d:"ilanda yok",n:"İlanda yazan: öğrenciler, çalışanlar ve işe gidip gelenler için uygun.",tags:["Oda","Eşyalı"],room:1,furn:1,u:KA+"voll-moebliertes-wg-zimmer/3521741812-203-2159",s:"Kleinanzeigen · özel"},
+ {km:9.0,ap:1,t:"Kendi banyolu oda (montaj / iş seyahati)",p:"Borchen",z:"Oda · 14 m²",k:"—",w:"Pazarlıkla",a:"sorulmalı",d:"ilanda yok",n:"Kendi banyo ve duşu, Wi-Fi, çamaşır makinesi, park yeri. Kısa süreli kalış için iyi bir başlangıç.",tags:["Oda","Eşyalı"],room:1,furn:1,u:KA+"zimmer-fuer-mitarbeiter-auf-montage-oder-dienstreise/3419270417-199-2159",s:"Kleinanzeigen · özel"},
+ {km:9.0,ap:1,t:"WG odası (ilan öğrencilere yönelik)",p:"Borchen",z:"Oda · 16 m²",k:"—",w:"500 €",a:"sorulmalı",d:"ilanda yok",n:"Fiyat oda başına, sıcak kira. Eşyalı ya da eşyasız. Market ve otobüs durağı 3 dk.",tags:["Oda","Öğrenci odaklı"],room:1,warn:1,u:KA+"wg-zimmer-fuer-studenten/3532993630-199-2159",s:"Kleinanzeigen · özel"},
+ {km:9.3,ap:1,t:"Balkonlu yeni daire (ilk kiracı)",p:"Borchen-Kirchborchen",z:"2 Zi · 65 m²",k:"850 €",w:"1.150 €",a:"Ocak 2027",d:"ilanda yok",n:"Soğutmalı yerden ısıtma.",tags:["Daire"],u:KA+"2-zimmer-wohnung-mit-balkon-in-kirchborchen-erstbezug/3561835762-203-2159",s:"Kleinanzeigen · özel"},
+ {km:9.3,t:"Çatı teraslı yeni daire",p:"Paderborn-Wewer, Alter Hellweg 14",z:"2 Zi · 46 m²",k:"600 €",w:"≈ 740 €",a:"Aralık 2026",d:"1.800 €",n:"Yeni bina.",tags:["Daire"],u:KA+"moderne-2-zimmer-neubauwohnung-mit-dachterrasse-in-wewer/3574540510-203-2161",s:"Kleinanzeigen · özel"},
+ {km:9.7,t:"Tamamen eşyalı 1,5 odalı çatı katı",p:"Paderborn-Wewer, Weikenweg 63",z:"1,5 Zi · 40 m²",k:"400 €",w:"810 € (ilandaki toplam)",a:"Ocak 2027",d:"1.000 €",n:"Sadece tek kişi ve sigara içmeyen. Evcil hayvan yok. Paderborn Hbf otobüsüne 2 dakika yürüme.",tags:["Daire","Eşyalı"],furn:1,u:KA+"40m-dgwhg-1-5-zkb-vollmoebliert-an-einzelperson-und-nr/3578137078-203-2161",s:"Kleinanzeigen · özel"},
+ {km:9.8,t:"Balkonlu 1,5 odalı daire, mutfak ve kapalı otopark dahil",p:"Paderborn-Wewer, Triftweg 9",z:"1,5 Zi · 40 m²",k:"395 €",w:"485 €",a:"01.01.2027",d:"1.185 €",n:"Fiyat/konum oranı listedeki en iyilerden. ImmoScout24 (172541366) ve Immowelt'te de var.",tags:["Daire"],u:KA+"1-5-zimmer-wohnung-in-paderborn-wewer-mit-balkon-einbaukueche-tiefgaragenstellplatz/3567997463-203-2161",s:"3 sitede"},
+ {km:10.8,ap:1,t:"Çatı katı daire",p:"Bad Wünnenberg-Leiberg",z:"2 Zi · 68 m²",k:"476 €",w:"696 €",a:"Aralık 2026",d:"1.400 €",n:"Mutfak yok. Park yeri var.",tags:["Daire"],u:KA+"dachgeschosswohnung-in-leiberg-68qm/3558851510-203-1271",s:"Kleinanzeigen · özel"},
+ {km:10.8,ap:1,t:"Balkonlu zemin kat daire",p:"Bad Wünnenberg-Leiberg",z:"2 Zi · 92 m²",k:"690 €",w:"990 €",a:"Aralık 2026",d:"1.900 €",n:"Tek yatak odası, mutfak var, şu an yenileniyor.",tags:["Daire"],u:KA+"wohnung-in-leiberg-ca-92-qm-erdgeschoss/3548550555-203-1271",s:"Kleinanzeigen · özel"},
+ {km:11.3,t:"Sakin mahallede çatı katı, mutfak dahil",p:"Salzkotten-Scharmede, Petrusweg 4",z:"2 Zi · 84 m²",k:"—",w:"520 € (ilanda böyle)",a:"Aralık 2026",d:"800 €",n:"Rakam düşük görünüyor, yan giderler (120 €) dahil mi sorulmalı.",tags:["Daire"],u:KA+"2-zimmer-dachgeschosswohnung-in-ruhiger-siedlungslage/3570498063-203-1362",s:"Kleinanzeigen · özel"},
+ {km:11.8,ap:1,t:"Üst kat 2 odalı daire",p:"Salzkotten-Holsen",z:"2 Zi · 69 m²",k:"550 €",w:"700 €",a:"Kasım 2026",d:"1.650 €",n:"Mutfak yok, park yeri var, banyo yeni gibi.",tags:["Daire"],u:KA+"2-zimmer-wohnung-zu-vermieten/3575774020-203-1362",s:"Kleinanzeigen · özel"},
+ {km:12.2,ap:1,t:"Merkezde çatı katı daire",p:"Bad Wünnenberg",z:"2 Zi · 51 m²",k:"410 €",w:"≈ 510 €",a:"2027",d:"ilanda yok",n:"2. kat, alışverişe yürüme mesafesi.",tags:["Daire"],u:KA+"mietwohnung-zentral-bad-wuennenberg/3561795254-203-1271",s:"Kleinanzeigen · özel"},
+ {km:12.2,ap:1,t:"Bahçeli, park yerli tek kişilik daire",p:"Bad Wünnenberg",z:"1 Zi · 47 m²",k:"350 €",w:"485 €",a:"sorulmalı",d:"700 €",n:"Emlakçı: Lilian Büker Immobilien. Mutfak dahil, tarihi binada.",tags:["Daire"],u:KA+"single-1-zimmerwohnung-mit-garten-und-stellplatz/3577371530-203-1271",s:"Kleinanzeigen · emlakçı"},
+ {km:12.2,ap:1,t:"Yeni gibi 2 odalı çatı katı",p:"Bad Wünnenberg",z:"2 Zi · 65 m²",k:"780 €",w:"≈ 960 €",a:"Nisan 2027",d:"ilanda yok",n:"Evcil hayvan görüşülür, bahçe kullanımı mümkün.",tags:["Daire"],u:KA+"2-zimmer-wohnung-neubauartig/3578083937-203-1271",s:"Kleinanzeigen · özel"},
+ {km:12.4,ap:1,t:"Balkonlu çatı katı daire",p:"Geseke-Ehringhausen",z:"2 Zi · 60 m²",k:"420 €",w:"620 €",a:"Aralık 2026",d:"840 €",n:"Evcil hayvan yok.",tags:["Daire"],u:KA+"2-zimmer-dachgeschosswohnung-60qm-mit-balkon-in-ehringhausen/3559268430-203-1260",s:"Kleinanzeigen · özel"},
+ {km:12.4,ap:1,t:"Zemin kat daire",p:"Geseke-Ehringhausen",z:"2 Zi · 64 m²",k:"359 €",w:"ilanda yok",a:"Ocak 2027",d:"1.000 €",n:"Yan giderler sorulmalı.",tags:["Daire"],u:KA+"erdgeschosswohnung-in-geseke-ehringhausen/3553874435-203-1260",s:"Kleinanzeigen · özel"},
+ {km:12.7,t:"Yeni mutfaklı 2 odalı daire",p:"Paderborn, Am Atlaswerk 2",z:"2 Zi · 53 m²",k:"400 €",w:"550 €",a:"01.12.2026",d:"1.200 €",n:"Paderborn şehrinin havalimanına bakan batı ucu.",tags:["Daire"],u:IS+"172118024",s:"ImmoScout24"},
+ {km:12.8,t:"İlk kiracı, mutfaklı küçük daire",p:"Paderborn, Abtsbrede 84a",z:"2 Zi · 40 m²",k:"720 €",w:"820 €",a:"01.12.2026",d:"2.160 €",n:"Merkez, zemin kat.",tags:["Daire"],u:IS+"170328362",s:"ImmoScout24"},
+ {km:13.5,t:"Kendi bahçeli zemin kat daire",p:"Salzkotten, Parkstraße 10",z:"2 Zi · 90 m²",k:"620 €",w:"995 €",a:"Ocak 2027",d:"1.860 €",n:"4 daireli bina, ormana sınır. ImmoScout24'te de var.",tags:["Daire"],u:KA+"erdgeschosswohnung-mit-eigenen-garten-zu-vermieten-/3574248317-203-1362",s:"Kleinanzeigen + ImmoScout24"},
+ {km:14.0,t:"Yeni yenilenmiş, tamamen eşyalı stüdyo",p:"Paderborn-Elsen, Dionysiusstraße",z:"1 Zi · 30 m²",k:"—",w:"530 €",a:"01.12.2026",d:"1.275 €",n:"Elsen, Paderborn'un havalimanı tarafındaki semti.",tags:["Daire","Eşyalı"],furn:1,u:WG+"1-zimmer-wohnungen-in-Paderborn.14384500.html",s:"WG-Gesucht"},
+ {km:14.3,ap:1,t:"Küçük çatı katı daire",p:"Paderborn-Elsen",z:"1 Zi · 28 m²",k:"300 €",w:"370 €",a:"Şubat 2027",d:"900 €",n:"Listedeki en ucuz daire.",tags:["Daire"],u:KA+"gemuetliche-dachgeschosswohnung-in-pb-elsen/3570239159-203-2161",s:"Kleinanzeigen · özel"},
+ {km:14.5,t:"1,5 odalı küçük daire",p:"Paderborn-Südstadt, Tannenweg 8",z:"1,5 Zi · 30 m²",k:"450 €",w:"560 €",a:"01.01.2027",d:"900 €",n:"Üniversiteye yakın.",tags:["Daire"],u:IS+"140350936",s:"ImmoScout24"},
+ {km:14.7,t:"Eşyalı WG odası, her şey dahil",p:"Paderborn, Winfriedstraße 17",z:"Oda · 15 m²",k:"—",w:"550 €",a:"Hemen",d:"800 €",n:"Yeni yenilenmiş. 5 kişilik ev.",tags:["Oda","Eşyalı"],room:1,furn:1,u:WG+"wg-zimmer-in-Paderborn.12276495.html",s:"WG-Gesucht"},
+ {km:15.2,t:"Bahçeli eski binada WG odası",p:"Paderborn, Warburger Straße 15",z:"Oda · 14 m²",k:"—",w:"407 €",a:"30.11.2026",d:"720 €",n:"5 kişilik karma WG.",tags:["Oda"],room:1,u:WG+"wg-zimmer-in-Paderborn.14222614.html",s:"WG-Gesucht"},
+ {km:16.9,t:"WG odası",p:"Paderborn, Uhlandstraße 56/62",z:"Oda · 12 m²",k:"—",w:"400 €",a:"Hemen",d:"900 €",n:"5 boş odalı yeni kurulan WG.",tags:["Oda"],room:1,u:WG+"wg-zimmer-in-Paderborn.8178278.html",s:"WG-Gesucht"},
+ {km:17.3,t:"Sakin konumda eşyalı WG odası",p:"Paderborn, Holsteiner Weg",z:"Oda · 14 m²",k:"—",w:"590 €",a:"Hemen",d:"900 €",n:"Şehir merkezine yakın.",tags:["Oda","Eşyalı"],room:1,furn:1,u:WG+"wg-zimmer-in-Paderborn.6569252.html",s:"WG-Gesucht"},
+ {km:4.6,t:"Bahçeli yarım evde yarı eşyalı oda",p:"Salzkotten, Vom-Stein-Straße 24",z:"Oda · 16 m²",k:"120 €",w:"280 €",a:"01.12.2026",d:"200 €",n:"3 kişilik WG, cinsiyet fark etmiyor. Büyük bahçe. Listedeki en ucuz ve havalimanına en yakın oda.",tags:["Oda","Eşyalı"],room:1,furn:1,u:WG+"wg-zimmer-in-Paderborn.3893092.html",s:"WG-Gesucht"},
+ {km:7.6,t:"Kiracı devri: rahat daire",p:"Büren, Daeckestraße 4",z:"72 m²",k:"495 €",w:"770 €",a:"31.12.2026",d:"1.485 €",n:"Mevcut kiracı yerine geçecek kişiyi (Nachmieter) arıyor. Sözleşme ev sahibiyle yapılır.",tags:["Daire"],u:WG+"wohnungen-in-Bueren.14101891.html",s:"WG-Gesucht"},
+ {km:11.5,t:"Sakin konumda dubleks (geçici kiralama)",p:"Salzkotten-Verlar, Holtkamp",z:"65 m²",k:"450 €",w:"750 €",a:"04.12.2026 – 31.01.2027",d:"500 €",n:"Sadece iki aylık ara kiralama (Zwischenmiete). Kalıcı ev bulana kadar geçiş için uygun.",tags:["Daire","Kısa süreli"],u:WG+"wohnungen-in-Salzkotten.14389736.html",s:"WG-Gesucht"},
+ {km:13.3,t:"Yenilenmiş eski binada bodrum katı stüdyo",p:"Paderborn, Pankratiusstr. 133",z:"1 Zi · 34 m²",k:"315 €",w:"465 €",a:"01.01.2027",d:"500 €",n:"Modernize edilmiş bina.",tags:["Daire"],u:WG+"1-zimmer-wohnungen-in-Paderborn.8036234.html",s:"WG-Gesucht"},
+ {km:13.4,t:"İyi semtte maisonette daire",p:"Paderborn, Glogauer Straße 12",z:"2,5 Zi · 67 m²",k:"700 €",w:"780 €",a:"16.11.2026'dan beri boş",d:"1.050 €",n:"İki katlı daire.",tags:["Daire"],u:WG+"wohnungen-in-Paderborn.13186386.html",s:"WG-Gesucht"},
+ {km:13.4,t:"6 kişilik merkezi WG'de oda",p:"Paderborn, Karl-Sonnenschein-Straße",z:"Oda · 13 m²",k:"200 €",w:"390 €",a:"01.12.2026",d:"400 €",n:"İlan başlığında yazan: öğrenciler ve çalışanlar kabul.",tags:["Oda"],room:1,u:WG+"wg-zimmer-in-Paderborn.7281461.html",s:"WG-Gesucht"},
+ {km:13.6,t:"Çatı katında eşyasız WG odası",p:"Delbrück-Bentfeld, Soester Weg 7",z:"Oda · 18 m²",k:"250 €",w:"350 €",a:"Hemen (01.07.2028'e kadar)",d:"700 €",n:"2 kişilik WG, cinsiyet fark etmiyor. Bentfeld, Salzkotten'in kuzeyinde bir köy.",tags:["Oda"],room:1,u:WG+"wg-zimmer-in-Paderborn.14212652.html",s:"WG-Gesucht"},
+ {km:14.0,t:"Eşyalı oda, esnek süreli",p:"Paderborn-Elsen, Am Richterbusch",z:"Oda · 11 m²",k:"357 €",w:"551 €",a:"Hemen – 31.03.2027",d:"714 €",n:"2 kişilik WG, geçici kiralama. Ev sahibi önce ilan metninin okunmasını istiyor.",tags:["Oda","Eşyalı","Kısa süreli"],room:1,furn:1,u:WG+"wg-zimmer-in-Paderborn.12948846.html",s:"WG-Gesucht"},
+ {km:14.2,t:"Tamamen eşyalı 60 m² daire",p:"Paderborn, Borchener Straße 21",z:"60 m²",k:"380 €",w:"540 €",a:"14.11.2026'dan beri boş",d:"ilanda yok",n:"Merkezi konum, tam eşyalı.",tags:["Daire","Eşyalı"],furn:1,u:WG+"wohnungen-in-Paderborn.14262335.html",s:"WG-Gesucht"},
+ {km:14.2,t:"Eski binada 3 kişilik WG'de oda",p:"Paderborn, Borchener Straße 20",z:"Oda · 13 m²",k:"—",w:"333 €",a:"01.12.2026",d:"435 €",n:"Cinsiyet fark etmiyor.",tags:["Oda"],room:1,u:WG+"wg-zimmer-in-Paderborn.14283637.html",s:"WG-Gesucht"},
+ {km:14.7,t:"Üniversite yanında eşyalı stüdyo",p:"Paderborn-Südstadt, Pohlweg 78",z:"1 Zi · 25 m²",k:"370 €",w:"450 €",a:"01.02.2027",d:"1.110 €",n:"Eşyalı.",tags:["Daire","Eşyalı"],furn:1,u:WG+"1-zimmer-wohnungen-in-Paderborn.14350868.html",s:"WG-Gesucht"},
+ {km:14.7,t:"Çatı teraslı 3 kişilik WG'de büyük oda",p:"Paderborn, Westernstraße 12",z:"Oda · 20 m²",k:"—",w:"380 €",a:"01.01.2027",d:"ilanda yok",n:"Şehrin tam merkezi, cinsiyet fark etmiyor.",tags:["Oda"],room:1,u:WG+"wg-zimmer-in-Paderborn.14370636.html",s:"WG-Gesucht"},
+ {km:15.2,t:"Üniversiteye yakın 2 odalı daire",p:"Paderborn, Warburger Straße 7",z:"2 Zi · 60 m²",k:"570 €",w:"790 €",a:"10.11.2026'dan beri boş",d:"1.710 €",n:"",tags:["Daire"],u:WG+"wohnungen-in-Paderborn.14346046.html",s:"WG-Gesucht"},
+ {km:15.4,t:"Çalışanlar WG'sinde (Berufs-WG) oda",p:"Paderborn-Zentrum, Laurentiusgasse",z:"Oda · 16 m²",k:"—",w:"270 €",a:"Hemen",d:"0 €",n:"4 kişilik çalışanlar evi. Aranan: sakin, 25 yaş üstü biri. Depozito yok.",tags:["Oda"],room:1,u:WG+"wg-zimmer-in-Paderborn.14052892.html",s:"WG-Gesucht"},
+ {km:15.6,t:"Bahçeli, sakin WG odası",p:"Paderborn, Hillebrandstraße 7",z:"Oda · 18 m²",k:"450 €",w:"540 €",a:"01.02.2027",d:"600 €",n:"5 kişilik WG, cinsiyet fark etmiyor.",tags:["Oda"],room:1,u:WG+"wg-zimmer-in-Paderborn.14346315.html",s:"WG-Gesucht"},
+ {km:15.9,t:"Nordstraße'de 30 m² WG odası",p:"Paderborn, Nordstraße 12",z:"Oda · 30 m²",k:"265 €",w:"380 €",a:"30.11.2026",d:"300 €",n:"Cinsiyet fark etmiyor.",tags:["Oda"],room:1,u:WG+"wg-zimmer-in-Paderborn.14277378.html",s:"WG-Gesucht"},
+ {km:16.1,t:"Sakin 3 kişilik WG'de oda",p:"Paderborn, Benhauser Straße",z:"Oda · 17 m²",k:"237 €",w:"364 €",a:"Hemen",d:"674 €",n:"Cinsiyet fark etmiyor.",tags:["Oda"],room:1,u:WG+"wg-zimmer-in-Paderborn.14075643.html",s:"WG-Gesucht"},
+ {km:16.6,t:"Balkonlu, mutfaklı stüdyo",p:"Paderborn, Rotheweg 29",z:"1 Zi · 38 m²",k:"380 €",w:"540 €",a:"01.12.2026",d:"800 €",n:"Tek kişilik mutfak, balkon.",tags:["Daire"],u:WG+"1-zimmer-wohnungen-in-Paderborn.14307231.html",s:"WG-Gesucht"},
+ {km:17.1,t:"Çok kuşaklı ortak evde 2 kişilik WG odası",p:"Paderborn-Stadtheide, Sylter Weg 9",z:"Oda · 21 m²",k:"330 €",w:"460 €",a:"01.12.2026",d:"920 €",n:"Cinsiyet fark etmiyor.",tags:["Oda"],room:1,u:WG+"wg-zimmer-in-Paderborn.10965690.html",s:"WG-Gesucht"},
+ {km:17.6,t:"4 kişilik WG'de oda",p:"Paderborn-Stadtheide, Augsburger Weg 2",z:"Oda · 17 m²",k:"250 €",w:"300 €",a:"01.01.2027",d:"500 €",n:"Cinsiyet fark etmiyor.",tags:["Oda"],room:1,u:WG+"wg-zimmer-in-Paderborn.14380726.html",s:"WG-Gesucht"}
+];
+L.sort((a, b) => a.km - b.km);
+const MAXKM = 18;
+const list = document.getElementById("list");
+const count = document.getElementById("count");
+function esc(s){return String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]))}
+const ROOMS_TR = [["2,5 Zi","1+1 + küçük oda"],["1,5 Zi","Stüdyo + küçük oda"],["2 Zi","1+1"],["1 Zi","Stüdyo (1 oda)"]];
+function roomsTr(z){ const hit = ROOMS_TR.find(([de]) => z.startsWith(de)); return hit ? hit[1] + z.slice(hit[0].length) : z; }
+function card(x){
+  const pct = Math.min(100, x.km / MAXKM * 100).toFixed(0);
+  const tags = x.tags.map(t => `<span class="tag${t==="Oda"?" room":""}${t==="Öğrenci odaklı"||t==="Kısa süreli"?" warn":""}">${esc(t)}</span>`).join("");
+  return `<li class="card">
+    <div class="km"><strong>${x.ap?"~":""}${x.km.toFixed(1).replace(".",",")}</strong><small>km</small><div class="runway" aria-hidden="true"><i style="width:${pct}%"></i></div></div>
+    <div class="top"><h3>${esc(x.t)}</h3><span class="place">${esc(x.p)}</span></div>
+    <dl class="grid"><div class="total"><dt>Aylık toplam</dt><dd>${esc(x.w)}</dd></div><div><dt>Daire tipi</dt><dd>${esc(roomsTr(x.z))}</dd></div><div><dt>Çıplak kira</dt><dd>${esc(x.k)}</dd></div><div><dt>Taşınma tarihi</dt><dd>${esc(x.a)}</dd></div><div><dt>Depozito</dt><dd>${esc(x.d)}</dd></div></dl>
+    <div class="foot"><div class="tags">${tags}</div><span>${esc(x.n)}</span><a href="${x.u}" target="_blank" rel="noopener">İlanı aç (${esc(x.s)})</a></div>
+  </li>`;
+}
+function render(f){
+  const rows = L.filter(x => f==="all" || (f==="flat" && !x.room) || (f==="room" && x.room) || (f==="furn" && x.furn) || (f==="10" && x.km<=10));
+  list.innerHTML = rows.map(card).join("");
+  count.textContent = rows.length + " ilan";
+}
+document.querySelectorAll(".chip").forEach(b => b.addEventListener("click", () => {
+  document.querySelectorAll(".chip").forEach(c => c.setAttribute("aria-pressed", String(c===b)));
+  render(b.dataset.f);
+}));
+render("all");
+</script>
+
+</html>
